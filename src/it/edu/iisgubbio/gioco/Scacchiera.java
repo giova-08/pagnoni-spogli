@@ -33,7 +33,7 @@ public class Scacchiera extends Application{
         
         
         // Caricamento delle immagini delle pedine
-        Image biancoPedone = new Image(getClass().getResourceAsStream("pedone_bianco-1.png"));  // Percorso delle immagini
+        Image biancoPedone = new Image(getClass().getResourceAsStream("pedone_bianco-1.png"));  
         Image neroPedone = new Image(getClass().getResourceAsStream("pedone_nero-1.png"));
         Image biancoRe = new Image(getClass().getResourceAsStream("re_bianco-1.png"));
         Image neroRe = new Image(getClass().getResourceAsStream("re_nero-1.png"));
@@ -52,8 +52,6 @@ public class Scacchiera extends Application{
         Image biancoRegina = new Image(getClass().getResourceAsStream("regina_bianca-1.png"));
         Image neroRegina = new Image(getClass().getResourceAsStream("regina_nera-1.png"));
         
-        
-     
         
         
         // Aggiunta delle pedine sulla scacchiera
