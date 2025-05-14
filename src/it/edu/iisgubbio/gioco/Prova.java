@@ -45,33 +45,25 @@ public class Prova extends Application{
         
         
         
-        
-        
         for(int riga=0;riga<dimensione;riga++) {
         	for(int colonna=0;colonna<dimensione;colonna++) {
-        		ImageView i = new ImageView();
-        		ImageView p = new ImageView();
         		StackPane s=new StackPane();
-        		grid.add(i, colonna, riga);
+        		
+        		ImageView i = new ImageView();
         		if(colonna%2==0 && riga%2==0) {
-        			i=new ImageView(quadratoBianco);
-        			i.setFitWidth(60);
-        			i.setFitHeight(60);
+        			i=new ImageView(quadratoBianco);      			
         		}else {
         			if(!(colonna%2==0 || riga%2==0)) {
-        				i=new ImageView(quadratoBianco);
-        				i.setFitWidth(60);
-            			i.setFitHeight(60);
+        				i=new ImageView(quadratoBianco);     				
         			}else {
         				i=new ImageView(quadratoNero);
-        				i.setFitWidth(60);
-            			i.setFitHeight(60);
         			}
         		}
+        		i.setFitWidth(60);
+                i.setFitHeight(60);
         		s.getChildren().add(i);
-        		grid.add(s, colonna, riga);
-        		// Gestore evento click
-                s.setOnMouseClicked(event -> mouseCliccato(s,p,event));
+        		
+        		ImageView p = new ImageView();
                 if (riga == 6) {
                     p.setImage(biancoPedone); // Pedoni bianchi
                 } else if (riga == 1) {
@@ -109,12 +101,21 @@ public class Prova extends Application{
                 }else if (riga == 0 && colonna == 0) {
                     p.setImage(neroTorreSx); //  Torre nera a sinistra della Regina nera
                 }
-             // Imposta la larghezza e altezza per ogni immagine
-                p.setFitWidth(60);
-                p.setFitHeight(60);
-        		s.getChildren().add(p);
+                
+             // Aggiungi il pezzo alla cella
+                if (p.getImage() != null) {
+                    p.setFitWidth(60);
+                    p.setFitHeight(60);
+                    s.getChildren().add(p);
+                }
+                
         		final StackPane cella = s;
                 final ImageView pezzo = p;
+             // Gestore evento click
+                s.setOnMouseClicked(event -> mouseCliccato(s,p,event));
+                
+                // Aggiungi la cella alla scacchiera
+                grid.add(s, colonna, riga);
         	}	
         }
         
@@ -125,37 +126,40 @@ public class Prova extends Application{
 	}
         
 	private void mouseCliccato(StackPane cella,ImageView pezzo, MouseEvent event){
-		 // Seleziona un pezzo
-        if (cellaSelezionata == null && pezzo.getImage() != null) {
-            // Se il pezzo non è già selezionato, seleziona il pezzo
-            cellaSelezionata = cella;
-            pezzoSelezionato = pezzo;
-            System.out.println("Pezzo selezionato: " + GridPane.getRowIndex(cella) + "," + GridPane.getColumnIndex(cella));
-        } 
-        // Sposta il pezzo
-        else if (pezzoSelezionato != null) {
-            int nuovaRiga = GridPane.getRowIndex(cella);
-            int nuovaColonna = GridPane.getColumnIndex(cella);
+		 // Caso 1: Se non c'è un pezzo selezionato e la cella contiene un pezzo
+	    if (cellaSelezionata == null && pezzo != null) {
+	        // Seleziona il pezzo
+	        cellaSelezionata = cella;
+	        pezzoSelezionato = pezzo;
+	        System.out.println("Pezzo selezionato");
+	    }
+	    // Caso 2: Se c'è un pezzo selezionato e si clicca su una casella
+	    else if (pezzoSelezionato != null) {
+	        // Caso 2.1: Se la casella cliccata contiene un pezzo diverso
+	        if (pezzo != null && !pezzo.equals(pezzoSelezionato)) {
+	            // Rimuovi il pezzo avversario dalla casella (mangia il pezzo)
+	            cella.getChildren().remove(pezzo); // Rimuove il pezzo mangiato
+	            System.out.println("Pezzo mangiato!");
+	        }
 
-            // Sposta il pezzo nella nuova cella, se la cella è vuota
-            if (pezzo.getImage() == null || pezzo.getImage() != null) {  // La cella di destinazione deve essere vuota
-                // Rimuovi il pezzo dalla posizione precedente
-                cellaSelezionata.getChildren().remove(pezzoSelezionato);
+	        // Caso 2.2: Sposta il pezzo selezionato nella nuova casella
+	        if (!cella.getChildren().contains(pezzoSelezionato)) {
+	            // Rimuovi il pezzo dalla casella di origine
+	            cellaSelezionata.getChildren().remove(pezzoSelezionato);
+	            
+	            // Aggiungi il pezzo alla nuova casella
+	            cella.getChildren().add(pezzoSelezionato);
+	            System.out.println("Pezzo spostato.");
+	        }
 
-                // Aggiungi il pezzo nella nuova posizione
-                cella.getChildren().add(pezzoSelezionato);
-                GridPane.setRowIndex(pezzoSelezionato, nuovaRiga);
-                GridPane.setColumnIndex(pezzoSelezionato, nuovaColonna);
-                System.out.println("Pezzo spostato a: " + nuovaRiga + "," + nuovaColonna);
-            }
+	        // Reset selezione
+	        cellaSelezionata = null;
+	        pezzoSelezionato = null;
+	    }
 
-            // Deseleziona
-            cellaSelezionata = null;
-            pezzoSelezionato = null;
-        }
-
-        event.consume(); // Evita che l'evento venga propagato ulteriormente
-    }
+	    // Consuma l'evento per evitare che si propaghi
+	    event.consume();
+	}
 	
 	public static void main(String[] args) {
         launch(args);
