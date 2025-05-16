@@ -112,7 +112,7 @@ public class Prova extends Application{
         		final StackPane cella = s;
                 final ImageView pezzo = p;
              // Gestore evento click
-                s.setOnMouseClicked(event -> mouseCliccato(s,p,event));
+                s.setOnMouseClicked(event -> mouseCliccato(s,null,event));
                 
                 // Aggiungi la cella alla scacchiera
                 grid.add(s, colonna, riga);
@@ -125,40 +125,54 @@ public class Prova extends Application{
         primaryStage.show();
 	}
         
-	private void mouseCliccato(StackPane cella,ImageView pezzo, MouseEvent event){
-		 // Caso 1: Se non c'è un pezzo selezionato e la cella contiene un pezzo
+	private void mouseCliccato(StackPane cella,ImageView ignored, MouseEvent event){
+		ImageView pezzo = null;
+
+	    // Cerco nella cella cliccata se c'è un pezzo (escludendo il primo ImageView che è lo sfondo)
+	    for (var node : cella.getChildren()) {
+	        if (node instanceof ImageView iv) {
+	            // Controllo che non è il primo ImageView ovvero lo sfondo e che ci sia un'immagine
+	            if (cella.getChildren().indexOf(iv) != 0 && iv.getImage() != null) {
+	                pezzo = iv;  // Assegno il pezzo trovato
+	                break;       // Esco dal ciclo appena trovo il pezzo
+	            }
+	        }
+	    }
+
+	    // Controllo se non c'e nessun pezzo selezionato e se nella cella che clicco c'è un pezzo
 	    if (cellaSelezionata == null && pezzo != null) {
-	        // Seleziona il pezzo
+	        // Seleziono la cella e il pezzo cliccati
 	        cellaSelezionata = cella;
 	        pezzoSelezionato = pezzo;
 	        System.out.println("Pezzo selezionato");
 	    }
-	    // Caso 2: Se c'è un pezzo selezionato e si clicca su una casella
+	    // Primo caso se c'è già un pezzo selezionato e si clicca su una nuova cella
 	    else if (pezzoSelezionato != null) {
-	        // Caso 2.1: Se la casella cliccata contiene un pezzo diverso
+	        // Adesso guardo se la nuova cella contiene un pezzo diverso da quello selezionato
 	        if (pezzo != null && !pezzo.equals(pezzoSelezionato)) {
-	            // Rimuovi il pezzo avversario dalla casella (mangia il pezzo)
-	            cella.getChildren().remove(pezzo); // Rimuove il pezzo mangiato
+	            // Rimuovo il pezzo mangiato
+	            cella.getChildren().remove(pezzo);
 	            System.out.println("Pezzo mangiato!");
 	        }
 
-	        // Caso 2.2: Sposta il pezzo selezionato nella nuova casella
+	        // Altro caso sposto il pezzo selezionato nella nuova cella
 	        if (!cella.getChildren().contains(pezzoSelezionato)) {
-	            // Rimuovi il pezzo dalla casella di origine
+	            // Rimuovo il pezzo dalla cella da cui l'ho spostato
 	            cellaSelezionata.getChildren().remove(pezzoSelezionato);
-	            
-	            // Aggiungi il pezzo alla nuova casella
+
+	            // Aggiungo il pezzo alla nuova cella
 	            cella.getChildren().add(pezzoSelezionato);
 	            System.out.println("Pezzo spostato.");
 	        }
 
-	        // Reset selezione
+	        // Resetto la selezione
 	        cellaSelezionata = null;
 	        pezzoSelezionato = null;
 	    }
 
-	    // Consuma l'evento per evitare che si propaghi
+	    // Fermo che l'evento prima che ad altri gestori arrivi l'input del click
 	    event.consume();
+                
 	}
 	
 	public static void main(String[] args) {
