@@ -66,40 +66,58 @@ public class Prova extends Application{
         		ImageView p = new ImageView();
                 if (riga == 6) {
                     p.setImage(biancoPedone); // Pedoni bianchi
+                    p.setUserData("pedone_bianco");
                 } else if (riga == 1) {
                     p.setImage(neroPedone); // Pedoni neri
+                    p.setUserData("pedone_nero");
                 } else if (riga == 7 && colonna == 4) {
                     p.setImage(biancoRe); // Re bianco
+                    p.setUserData("re_bianco");
                 } else if (riga == 0 && colonna == 4) {
                     p.setImage(neroRe); // Re nero
+                    p.setUserData("re_nero");
                 }else if (riga == 7 && colonna == 5) {
                     p.setImage(biancoAlfiereDx); // Alfiere bianco a destra del Re bianco
+                    p.setUserData("alfiereDx_bianco");
                 }else if (riga == 7 && colonna == 2) {
                     p.setImage(biancoAlfiereSx); // Alfiere bianco a sinistra della Regina bianca
+                    p.setUserData("alfiereSx_bianco");
                 }else if (riga == 0 && colonna == 5) {
                     p.setImage(neroAlfiereDx); // Alfiere nero a destra del Re nero
+                    p.setUserData("alfiereDx_nero");
                 }else if (riga == 0 && colonna == 2) {
                     p.setImage(neroAlfiereSx); // Alfiere nero a sinistra della Regina nera
+                    p.setUserData("alfiereSx_nero");
                 }else if (riga == 7 && colonna == 3) {
                     p.setImage(biancoRegina); //  Regina bianca
+                    p.setUserData("regina_bianco");
                 }else if (riga == 0 && colonna == 3) {
                     p.setImage(neroRegina); //  Regina nera
+                    p.setUserData("regina_nero");
                 }else if (riga == 7 && colonna == 6) {
                     p.setImage(biancoCavalloDx); //  Cavallo bianco a destra del Re bianco
+                    p.setUserData("cavalloDx_bianco");
                 }else if (riga == 7 && colonna == 1) {
                     p.setImage(biancoCavalloSx); //  Cavallo bianco a sinistra della Regina bianca
+                    p.setUserData("cavalloSx_bianco");
                 }else if (riga == 0 && colonna == 6) {
                     p.setImage(neroCavalloDx); //  Cavallo nero a destra del Re nero
+                    p.setUserData("cavalloDx_nero");
                 }else if (riga == 0 && colonna == 1) {
                     p.setImage(neroCavalloSx); //  Cavallo nero a sinistra della Regina nera
+                    p.setUserData("cavalloSx_nero");
                 }else if (riga == 7 && colonna == 7) {
                     p.setImage(biancoTorreDx); //  Torre bianca a destra del Re bianco
+                    p.setUserData("torreDx_bianco");
                 }else if (riga == 7 && colonna == 0) {
                     p.setImage(biancoTorreSx); //  Torre bianca a destra della Regina bianca
+                    p.setUserData("torreSx_bianco");
                 }else if (riga == 0 && colonna == 7) {
-                    p.setImage(neroTorreDx); //  Torre nera a destra del Re bianco
+                    p.setImage(neroTorreDx); //  Torre nera a destra del Re nero
+                    p.setUserData("torreDx_nero");
                 }else if (riga == 0 && colonna == 0) {
                     p.setImage(neroTorreSx); //  Torre nera a sinistra della Regina nera
+                    p.setUserData("torreSx_nero");
                 }
                 
              // Aggiungi il pezzo alla cella
@@ -109,10 +127,8 @@ public class Prova extends Application{
                     s.getChildren().add(p);
                 }
                 
-        		final StackPane cella = s;
-                final ImageView pezzo = p;
              // Gestore evento click
-                s.setOnMouseClicked(event -> mouseCliccato(s,null,event));
+                s.setOnMouseClicked(event -> mouseCliccato(s,event));
                 
                 // Aggiungi la cella alla scacchiera
                 grid.add(s, colonna, riga);
@@ -125,7 +141,7 @@ public class Prova extends Application{
         primaryStage.show();
 	}
         
-	private void mouseCliccato(StackPane cella,ImageView ignored, MouseEvent event){
+	private void mouseCliccato(StackPane cella, MouseEvent event){
 		ImageView pezzo = null;
 
 	    // Cerco nella cella cliccata se c'è un pezzo (escludendo il primo ImageView che è lo sfondo)
@@ -141,13 +157,94 @@ public class Prova extends Application{
 
 	    // Controllo se non c'e nessun pezzo selezionato e se nella cella che clicco c'è un pezzo
 	    if (cellaSelezionata == null && pezzo != null) {
-	        // Seleziono la cella e il pezzo cliccati
-	        cellaSelezionata = cella;
-	        pezzoSelezionato = pezzo;
-	        System.out.println("Pezzo selezionato");
+	    	
+	    	// PrendO il tipo del pezzo con UserData
+	        Object tipo = pezzo.getUserData();
+	     // Verifico che il pezzo è un pedone
+	        if (tipo != null && (tipo.equals("pedone_bianco") || tipo.equals("pedone_nero"))) {
+	        	// Se è un pedone, lo seleziono
+	            cellaSelezionata = cella;
+	            pezzoSelezionato = pezzo;
+	            System.out.println("Pezzo selezionato");
+	        } else {
+	        	//sennò annullo tutto
+	            System.out.println("Pezzo non supportato. Selezione ignorata.");
+	            cellaSelezionata = null;
+	            pezzoSelezionato = null;
+	        }
 	    }
 	    // Primo caso se c'è già un pezzo selezionato e si clicca su una nuova cella
 	    else if (pezzoSelezionato != null) {
+	    	// prendo le coordinate della cella di partenza
+	    	 int startX = GridPane.getRowIndex(cellaSelezionata);
+	         int startY = GridPane.getColumnIndex(cellaSelezionata);
+	      // prendo le coordinate della cella cliccata 
+	         int endX = GridPane.getRowIndex(cella);
+	         int endY = GridPane.getColumnIndex(cella);
+
+	      // prendo il tipo del pezzo selezionato
+	         Object tipo = pezzoSelezionato.getUserData();
+	      // imposto una variabile di controllo per capire se la mossa è valida o meno
+	         boolean mossaValida = false;
+	         //PEDONE BIANCO
+	         if (tipo != null && tipo.equals("pedone_bianco")) {
+	             // Avanti di 1 senza mangiare
+	             if (startX - 1 == endX && startY == endY && pezzo == null) {
+	                 mossaValida = true;
+	             }
+	             // Avanti di 2 dalla riga iniziale
+	             else if (startX == 6 && endX == 4 && startY == endY && pezzo == null) {
+	                 mossaValida = true;
+	             }
+	             // Mangia in diagonale
+	             /* 
+	              * controllo che va avanti di 1
+	              * che si sposta di una colonna
+	              * che sia un'altro pezzo da poter mangiare
+	              * e che sia un pezzo nero
+	              */
+	             
+	             else if (startX - 1 == endX && Math.abs(startY - endY) == 1 && 
+	                      pezzo != null && pezzo.getUserData() != null &&
+	                      pezzo.getUserData().toString().contains("nero")) {
+	                 mossaValida = true;
+	             }
+	         } 
+	         //PEDONE NERO
+	         else if (tipo != null && tipo.equals("pedone_nero")) {
+	        	// Avanti di 1 senza mangiare
+	             if (startX + 1 == endX && startY == endY && pezzo == null) {
+	                 mossaValida = true;
+	             // Avanti di 2 dalla riga iniziale
+	             } else if (startX == 1 && endX == 3 && startY == endY && pezzo == null) {
+	                 mossaValida = true;
+	             // Mangia in diagonale
+	             /* 
+		          * controllo che va avanti di 1
+		          * che si sposta di una colonna
+		          * che sia un'altro pezzo da poter mangiare
+		          * e che sia un pezzo bianco
+		         */
+	             } else if (startX + 1 == endX && Math.abs(startY - endY) == 1 &&
+	                        pezzo != null && pezzo.getUserData() != null &&
+	                        pezzo.getUserData().toString().contains("bianco")) {
+	                 mossaValida = true;
+	             }
+	         } else {
+	             // Se è un tipo non supportato, annullo tutto
+	             System.out.println("Movimento non supportato. Selezione annullata.");
+	             cellaSelezionata = null;
+	             pezzoSelezionato = null;
+	             return;
+	         }
+	      // Se la mossa non è  valida, blocco l'azione
+	         if (!mossaValida) {
+	             System.out.println("Mossa non valida!");
+	             cellaSelezionata = null;
+	             pezzoSelezionato = null;
+	             return;
+	         }
+	        //Ora sicuramente sarà una mossa valida
 	        // Adesso guardo se la nuova cella contiene un pezzo diverso da quello selezionato
 	        if (pezzo != null && !pezzo.equals(pezzoSelezionato)) {
 	            // Rimuovo il pezzo mangiato
@@ -170,7 +267,7 @@ public class Prova extends Application{
 	        pezzoSelezionato = null;
 	    }
 
-	    // Fermo che l'evento prima che ad altri gestori arrivi l'input del click
+	    // Fermo l'evento prima che ad altri gestori arrivi l'input del click
 	    event.consume();
                 
 	}
