@@ -14,6 +14,7 @@ public class Prova extends Application {
 	StackPane cellaSelezionata = null;
 	ImageView pezzoSelezionato = null;
 	public GridPane grid;
+	private boolean turnoBianco = true; // true = tocca ai bianchi, false = ai neri
 
 	@Override
 	public void start(Stage primaryStage) {
@@ -42,6 +43,8 @@ public class Prova extends Application {
 		Image biancoRegina = new Image(getClass().getResourceAsStream("regina_bianca-1.png"));
 		Image neroRegina = new Image(getClass().getResourceAsStream("regina_nera-1.png"));
 
+		//For per impostare le immagini dentro l'imageview e poi aggiungerle allo stackpane
+		//e poi aggiungere tutto alla griglia, imposto anche le dimensioni delle immagini
 		for (int riga = 0; riga < dimensione; riga++) {
 			for (int colonna = 0; colonna < dimensione; colonna++) {
 				StackPane s = new StackPane();
@@ -61,6 +64,8 @@ public class Prova extends Application {
 				s.getChildren().add(i);
 
 				ImageView p = new ImageView();
+				//Aggiungo i pezzi ad un loro imageview e poi per ognuno e assoccio a p
+				// per tutti i pezzi un dato con setUserData per poi sapere in seguito che tipo di pezzo è
 				if (riga == 6) {
 					p.setImage(biancoPedone); // Pedoni bianchi
 					p.setUserData("pedone_bianco");
@@ -117,7 +122,7 @@ public class Prova extends Application {
 					p.setUserData("torreSx_nero");
 				}
 
-				// Aggiungi il pezzo alla cella
+				// Aggiungo il pezzo alla cella
 				if (p.getImage() != null) {
 					p.setFitWidth(60);
 					p.setFitHeight(60);
@@ -160,11 +165,11 @@ public class Prova extends Application {
 
 			// PrendO il tipo del pezzo con UserData
 			Object tipo = pezzo.getUserData();
-			// Verifico che il pezzo è un pedone o un cavallo
+			// Verifico che tipo di pezzo è
 			if (tipo != null && (tipo.equals("pedone_bianco") || tipo.equals("pedone_nero")
 					|| tipo.toString().contains("cavallo") || tipo.toString().contains("alfiere")
 					|| tipo.equals("re_bianco") || tipo.equals("re_nero")||
-					tipo.toString().contains("torre"))) {
+					tipo.toString().contains("torre")|| tipo.toString().contains("regina"))) {
 				// Se è un pezzo supportato, lo seleziono
 				cellaSelezionata = cella;
 				pezzoSelezionato = pezzo;
@@ -174,6 +179,17 @@ public class Prova extends Application {
 				System.out.println("Pezzo non supportato. Selezione ignorata.");
 				cellaSelezionata = null;
 				pezzoSelezionato = null;
+			}
+			// Controllo se il pezzo è del colore corretto per il turno
+			if ((turnoBianco && tipo.toString().contains("bianco")) ||
+			    (!turnoBianco && tipo.toString().contains("nero"))) {
+			    // Se è un pezzo supportato e del turno corretto, lo seleziono
+			    cellaSelezionata = cella;
+			    pezzoSelezionato = pezzo;
+			} else {
+			    System.out.println("Non è il tuo turno.");
+			    cellaSelezionata = null;
+			    pezzoSelezionato = null;
 			}
 		}
 		// Primo caso se c'è già un pezzo selezionato e si clicca su una nuova cella
@@ -369,7 +385,7 @@ public class Prova extends Application {
 
 						 // Scorro tutti i nodi contenuti nella griglia
 						for (javafx.scene.Node node : grid.getChildren()) {
-							//Per ogni nodi riprendo le righe e le colonne
+							//Per ogni nodo riprendo le righe e le colonne
 							Integer r = GridPane.getRowIndex(node);
 							Integer c = GridPane.getColumnIndex(node);
 							if (r == null) r = 0;
@@ -377,7 +393,7 @@ public class Prova extends Application {
 
 							//Se la casella ha queste coordinate allora è la casella intermedia
 							if (r == x && c == y) {
-								//Assegno a casellaIntermedia le coordinate della casella intermedia
+								//Assegno a casellaIntermedia le coordinate trovate sopra
 								casellaIntermedia = (StackPane) node;
 								break;
 							}
@@ -418,6 +434,84 @@ public class Prova extends Application {
 					}
 				}
 			}
+			// REGINA BIANCA E NERA
+			else if (tipo.toString().contains("regina")) {
+				/*
+				 * Calcolo nelle variabili la distanza delle righe e delle colonne da dove parte
+				 * e dove arriva
+				 */
+				int dx = Math.abs(startX - endX);
+				int dy = Math.abs(startY - endY);
+
+				// La regina si muove in diagonale o in verticale e orizzontale
+				if ((dx == dy) || (dx == 0 || dy == 0)) {
+
+					// se stepX è +1 va giù se è -1 va su
+					int stepX = (endX - startX) == 0 ? 0 : (endX - startX > 0 ? 1 : -1);
+					// se stepY è +1 va a destra se è -1 va a sinistra
+					int stepY = (endY - startY) == 0 ? 0 : (endY - startY > 0 ? 1 : -1);
+
+					boolean ostacolo = false;
+
+					// Controllo ogni casella intermedia tra partenza e arrivo
+					for (int i = 1; i < Math.max(dx, dy); i++) {
+						// x e y coordinate della prossima casella intermedia
+						int x = startX + i * stepX;
+						int y = startY + i * stepY;
+
+						StackPane casellaIntermedia = null;
+
+						// Scorro tutti i nodi contenuti nella griglia
+						for (javafx.scene.Node node : grid.getChildren()) {
+							//Per ogni nodo riprendo le righe e le colonne
+							Integer r = GridPane.getRowIndex(node);
+							Integer c = GridPane.getColumnIndex(node);
+							if (r == null) r = 0;
+							if (c == null) c = 0;
+
+							//Se la casella ha queste coordinate allora è la casella intermedia
+							if (r == x && c == y) {
+							//Assegno a casellaIntermedia le coordinate trovate sopra
+								casellaIntermedia = (StackPane) node;
+								break;
+							}
+						}
+
+						//se la casellaIntermedia non è vuota
+						if (casellaIntermedia != null) {
+							// Scorro tutti i figli di quella casella
+							for (javafx.scene.Node child : casellaIntermedia.getChildren()) {
+								//se trova un ImageView con qualcosa dentro 
+				                //controlla che non sia il primo(quindi lo sfondo)
+				                //se le condizioni sono vere allora c'è un ostacolo
+								if (child instanceof ImageView iv && iv.getImage() != null &&
+									casellaIntermedia.getChildren().indexOf(iv) != 0) {
+									ostacolo = true;
+									break;
+								}
+							}
+						}
+
+						//Se c'è un ostacolo esco dal ciclo
+						if (ostacolo) {
+							break;
+						}
+					}
+
+					// Controllo se non ci sono ostacoli
+					if (!ostacolo) {
+						// Controllo che la casella sia vuota oppure che dove voglio spostare il pezzo 
+						// contenga un pezzo di colore diverso quindi lo mangio e la mossa è valida
+						if (pezzo == null || (
+							tipo.toString().contains("bianco") && pezzo.getUserData().toString().contains("nero") ||
+							tipo.toString().contains("nero") && pezzo.getUserData().toString().contains("bianco")
+						)) {
+							mossaValida = true;
+						}
+					}
+				}
+			}
+
 			else {
 				// Se è un movimento non supportato, annullo tutto
 				System.out.println("Movimento non supportato. Selezione annullata.");
@@ -449,6 +543,9 @@ public class Prova extends Application {
 				// Aggiungo il pezzo alla nuova cella
 				cella.getChildren().add(pezzoSelezionato);
 				System.out.println("Pezzo spostato.");
+				// Cambio turno
+				turnoBianco = !turnoBianco;
+				System.out.println("Turno: " + (turnoBianco ? "Bianco" : "Nero"));
 			}
 
 			// Resetto la selezione
