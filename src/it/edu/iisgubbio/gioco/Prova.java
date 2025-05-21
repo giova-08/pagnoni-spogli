@@ -13,11 +13,12 @@ public class Prova extends Application {
 
 	StackPane cellaSelezionata = null;
 	ImageView pezzoSelezionato = null;
+	public GridPane grid;
 
 	@Override
 	public void start(Stage primaryStage) {
 		// Creazione della GridPane per la scacchiera
-		GridPane grid = new GridPane();
+		grid = new GridPane();
 		int dimensione = 8;
 
 		Image quadratoBianco = new Image(getClass().getResourceAsStream("quadrato_bianco.png"));
@@ -162,7 +163,8 @@ public class Prova extends Application {
 			// Verifico che il pezzo è un pedone o un cavallo
 			if (tipo != null && (tipo.equals("pedone_bianco") || tipo.equals("pedone_nero")
 					|| tipo.toString().contains("cavallo") || tipo.toString().contains("alfiere")
-					|| tipo.equals("re_bianco") || tipo.equals("re_nero"))) {
+					|| tipo.equals("re_bianco") || tipo.equals("re_nero")||
+					tipo.toString().contains("torre"))) {
 				// Se è un pezzo supportato, lo seleziono
 				cellaSelezionata = cella;
 				pezzoSelezionato = pezzo;
@@ -226,7 +228,7 @@ public class Prova extends Application {
 					mossaValida = true;
 				}
 			}
-			// Cavalli bianchi e neri
+			// CAVALLI BIANCHI E NERI
 			else if (tipo.toString().contains("cavallo")) {
 				/*
 				 * Calcolo nelle variabili la distanza delle righe e delle colonne da dove parte
@@ -236,9 +238,10 @@ public class Prova extends Application {
 			    int dy = Math.abs(startY - endY);
 			 // Controllo che il movimento sia di 2 passi e poi di 1 oppure il contrario
 			    if ((dx == 2 && dy == 1) || (dx == 1 && dy == 2)) {
-			 // Controllo se la casella dove lo sposto è vuota o se contiene un pezzo nero
+			 // Controllo se la casella dove lo sposto è vuota 
 			        if (pezzo == null || 
-			            (pezzo.getUserData() != null && 
+			            (pezzo.getUserData() != null &&
+			 // Controllo se il pezzo che sto spostando non contiene lo stesso colore del pezzo che voglio mangiare  
 			             !pezzo.getUserData().toString().contains(
 			                 tipo.toString().contains("bianco") ? "bianco" : "nero"))) {
 			            mossaValida = true;
@@ -248,11 +251,14 @@ public class Prova extends Application {
 			//RE BIANCO E NERO
 			else if (tipo.equals("re_bianco") || tipo.equals("re_nero")) {
 
+				//Calcolo il numero di righe e di colonne di differenza tra dove parto e dove arrivo
 				int diffX = Math.abs(startX - endX);
 				int diffY = Math.abs(startY - endY);
 				// Il re può muoversi di una sola casella in qualsiasi direzione
+				//Controllo verticale             controllo orizzontale          controllo diagonale
 				if ((diffX == 1 && diffY == 0) || (diffX == 0 && diffY == 1) || (diffX == 1 && diffY == 1)) {
-					// Se non c'è nessun pezzo o c'è un pezzo avversario
+					// Controllo che la casella dove voglio spostare il pezzo 
+					// non contenga un pezzo dello stesso colore di quello che voglio spostare
 					if (pezzo == null || (
 					tipo.toString().contains("bianco") && pezzo.getUserData().toString().contains("nero") ||
 							tipo.toString().contains("nero") && pezzo.getUserData().toString().contains("bianco")
@@ -261,8 +267,8 @@ public class Prova extends Application {
 					}
 				}
 			}
-			// ALFIERE BIANCO
-			else if (tipo.toString().contains("alfiere") && tipo.toString().contains("bianco")) {
+			// ALFIERI BIANCHI E NERI
+			else if (tipo.toString().contains("alfiere")) {
 				/*
 				 * Calcolo nelle variabili la distanza delle righe e delle colonne da dove parte
 				 * e dove arriva
@@ -272,12 +278,147 @@ public class Prova extends Application {
 
 				// Movimento diagonale
 				if (dx == dy) {
-					// Controllo se la casella dove lo sposto è vuota o se contiene un pezzo nero
-					if (pezzo == null || pezzo.getUserData().toString().contains("nero")) {
-						mossaValida = true;
+					//Calcolo che se muove verso destra è +1 altrimenti -1
+					int stepX = (endX - startX) > 0 ? 1 : -1;
+					//Calcolo che se muove verso l'alto è +1 altrimenti -1
+			        int stepY = (endY - startY) > 0 ? 1 : -1;
+
+			        boolean ostacolo = false;
+
+			        //for per scorrere tutte le caselle intermedie della diagonale
+			        for (int i = 1; i < dx; i++) {
+			        	//Calcolo tutte le coordinate di ogni casella intermedia
+			            int x = startX + i * stepX;
+			            int y = startY + i * stepY;
+
+			            StackPane casellaIntermedia = null;
+
+			            // Scorro tutti i nodi contenuti nella griglia
+			            for (javafx.scene.Node node : grid.getChildren()) {
+			            	//Per ogni nodi riprendo le righe e le colonne
+			                Integer r = GridPane.getRowIndex(node);
+			                Integer c = GridPane.getColumnIndex(node);
+			                if (r == null) r = 0;
+			                if (c == null) c = 0;
+
+			                //Se la casella ha queste coordinate allora è la casella intermedia
+			                if (r == x && c == y) {
+			                	//Assegno a casellaIntermedia le coordinate della casella intermedia
+			                    casellaIntermedia = (StackPane) node;
+			                    break;
+			                }
+			            }
+			            //se la casellaIntermedia non è vuota
+			            if (casellaIntermedia != null) {
+			                // Scorro tutti i figli di quella casella
+			                for (javafx.scene.Node child : casellaIntermedia.getChildren()) {
+			                //se trova un ImageView con qualcosa dentro 
+			                //controlla che non sia il primo(quindi lo sfondo)
+			                //se le condizioni sono vere allora c'è un ostacolo
+			                    if (child instanceof ImageView iv && iv.getImage() != null && 
+			                        casellaIntermedia.getChildren().indexOf(iv) != 0) {
+			                        ostacolo = true;
+			                        break;
+			                    }
+			                }
+			            }
+			            //Se c'è un ostacolo esco dal ciclo
+			            if (ostacolo) {
+			                break; 
+			            }
+			        }
+			     // Controllo se non ci sono ostacoli
+			        if (!ostacolo) {
+			        	// Controllo che la casella sia vuota oppure che dove voglio spostare il pezzo 
+						// contenga un pezzo di colore diverso quindi lo mangio e la mossa è valida
+			            if (pezzo == null || (
+								tipo.toString().contains("bianco") && pezzo.getUserData().toString().contains("nero") ||
+								tipo.toString().contains("nero") && pezzo.getUserData().toString().contains("bianco")
+						)) {
+			                mossaValida = true;
+			            } 
+			        }
+			    }
+			}
+			// TORRI BIANCHE E NERE
+			else if (tipo.toString().contains("torre")) {
+				/*
+				 * Calcolo nelle variabili la distanza delle righe e delle colonne da dove parte
+				 * e dove arriva
+				 */
+				int dx = Math.abs(startX - endX);
+				int dy = Math.abs(startY - endY);
+
+				// Movimento solo orizzontale o verticale
+				if (dx == 0 || dy == 0) {
+					//Primo controllo non si muove in verticale, poi se è positivo va in giù sennò in su
+					int stepX = (endX - startX) == 0 ? 0 : (endX - startX > 0 ? 1 : -1);
+					//Primo controllo non si muove in orizzontale, poi se è positivo va a destra sennò a sinistra
+					int stepY = (endY - startY) == 0 ? 0 : (endY - startY > 0 ? 1 : -1);
+
+					boolean ostacolo = false;
+
+					//For per capire quanti passi Facciamo con Math.max
+					for (int i = 1; i < Math.max(dx, dy); i++) {
+					//stepX dice dove ti muovi, poi i* dice quante righe si deve muovere
+						int x = startX + i * stepX;
+					//stepY dice dove ti muovi, poi i* dice quante righe si deve muovere
+						int y = startY + i * stepY;
+
+						StackPane casellaIntermedia = null;
+
+						 // Scorro tutti i nodi contenuti nella griglia
+						for (javafx.scene.Node node : grid.getChildren()) {
+							//Per ogni nodi riprendo le righe e le colonne
+							Integer r = GridPane.getRowIndex(node);
+							Integer c = GridPane.getColumnIndex(node);
+							if (r == null) r = 0;
+							if (c == null) c = 0;
+
+							//Se la casella ha queste coordinate allora è la casella intermedia
+							if (r == x && c == y) {
+								//Assegno a casellaIntermedia le coordinate della casella intermedia
+								casellaIntermedia = (StackPane) node;
+								break;
+							}
+						}
+
+						//se la casellaIntermedia non è vuota
+						if (casellaIntermedia != null) {
+							// Scorro tutti i figli di quella casella
+							for (javafx.scene.Node child : casellaIntermedia.getChildren()) {
+								 //se trova un ImageView con qualcosa dentro 
+				                //controlla che non sia il primo(quindi lo sfondo)
+				                //se le condizioni sono vere allora c'è un ostacolo
+								if (child instanceof ImageView iv && iv.getImage() != null &&
+									casellaIntermedia.getChildren().indexOf(iv) != 0) {
+									
+									ostacolo = true;
+									break;
+								}
+							}
+						}
+
+						//Se c'è un ostacolo esco dal ciclo
+						if (ostacolo) {
+							break;
+						}
+					}
+
+					// Controllo se non ci sono ostacoli
+					if (!ostacolo) {
+						// Controllo che la casella sia vuota oppure che dove voglio spostare il pezzo 
+						// contenga un pezzo di colore diverso quindi lo mangio e la mossa è valida
+						if (pezzo == null || (
+								tipo.toString().contains("bianco") && pezzo.getUserData().toString().contains("nero") ||
+								tipo.toString().contains("nero") && pezzo.getUserData().toString().contains("bianco")
+						)) {
+							mossaValida = true;
+						}
 					}
 				}
-			} else {
+			}
+			else {
 				// Se è un movimento non supportato, annullo tutto
 				System.out.println("Movimento non supportato. Selezione annullata.");
 				cellaSelezionata = null;
