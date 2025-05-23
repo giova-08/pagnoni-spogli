@@ -2,6 +2,8 @@ package it.edu.iisgubbio.gioco;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -15,6 +17,7 @@ public class Prova extends Application {
 	ImageView pezzoSelezionato = null;
 	public GridPane grid;
 	private boolean turnoBianco = true; // true = tocca ai bianchi, false = ai neri
+
 
 	@Override
 	public void start(Stage primaryStage) {
@@ -145,6 +148,8 @@ public class Prova extends Application {
 
 	private void mouseCliccato(StackPane cella, MouseEvent event) {
 		ImageView pezzo = null;
+		String vincitore;
+		
 
 		// Cerco nella cella cliccata se c'è un pezzo (escludendo il primo ImageView che
 		// è lo sfondo)
@@ -162,8 +167,8 @@ public class Prova extends Application {
 		// Controllo se non c'e nessun pezzo selezionato e se nella cella che clicco c'è
 		// un pezzo
 		if (cellaSelezionata == null && pezzo != null) {
-
-			// PrendO il tipo del pezzo con UserData
+			
+			// Prendo il tipo del pezzo con UserData
 			Object tipo = pezzo.getUserData();
 			// Verifico che tipo di pezzo è
 			if (tipo != null && (tipo.equals("pedone_bianco") || tipo.equals("pedone_nero")
@@ -533,8 +538,27 @@ public class Prova extends Application {
 				// Rimuovo il pezzo mangiato
 				cella.getChildren().remove(pezzo);
 				System.out.println("Pezzo mangiato!");
-			}
+			// Controllo se nella casella c'è un re 
+				if (pezzo.getUserData() != null && pezzo.getUserData().toString().contains("re")) {
+					// Se il pezzo mangiato è un Re, determina il vincitore
+					if (pezzo.getUserData().toString().contains("bianco")) {
+						vincitore="Nero";
+						System.out.println("Ha vinto il nero");
+					} else {
+						vincitore="Bianco";
+						System.out.println("Ha vinto il bianco");
+					}
 
+					// Mostro un messaggio di fine partita usando Alert che apre un'icona che si può chiudere
+					Alert alert = new Alert(Alert.AlertType.INFORMATION);
+					alert.setTitle("Scacco Matto");
+					alert.setHeaderText(null);
+					alert.setContentText("Il Re è stato catturato! Ha vinto il " + vincitore+ "! Fine della partita.");
+					alert.showAndWait();
+
+					return; // Ferma il gioco
+				}
+			}
 			// Altro caso sposto il pezzo selezionato nella nuova cella
 			if (!cella.getChildren().contains(pezzoSelezionato)) {
 				// Rimuovo il pezzo dalla cella da cui l'ho spostato
