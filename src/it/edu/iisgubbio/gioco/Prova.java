@@ -1,6 +1,7 @@
 package it.edu.iisgubbio.gioco;
 
 import javafx.application.Application;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
@@ -8,7 +9,12 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
 public class Prova extends Application {
@@ -17,6 +23,16 @@ public class Prova extends Application {
 	ImageView pezzoSelezionato = null;
 	public GridPane grid;
 	private boolean turnoBianco = true; // true = tocca ai bianchi, false = ai neri
+	public Label titolo;
+	public Label mosse;
+	public Label pedone;
+	public Label torre;
+	public Label alfiere;
+	public Label cavallo;
+	public Label re;
+	public Label regina;
+	Label turno = new Label("Turno: Bianco");
+	public Label informazioni;
 
 
 	@Override
@@ -139,8 +155,43 @@ public class Prova extends Application {
 				grid.add(s, colonna, riga);
 			}
 		}
+		
+		// Pannello di destra per scrivere delle informazioni
+		VBox infoBox = new VBox(10);
+		infoBox.setPadding(new Insets(10));
+		infoBox.setPrefWidth(350);
+		infoBox.setStyle("-fx-background-color: #f0f0f0;"
+				+ "-fx-background-color: #f0f0f0;"
+				+ "-fx-font-family: 'Arial';"
+				+ "-fx-font-size: 14px;"
+				+ "-fx-text-fill: black;");
+		
+		
+		// Label con informazioni
+		titolo = new Label("INFORMAZIONI PER GIOCARE");
+		titolo.setFont(Font.font("Arial", FontWeight.NORMAL, 22));
+		titolo.setTextFill(Color.RED);
+		mosse = new Label("I pezzi si muovono:");
+		pedone= new Label("- Pedone: si muove avanti di 1,\n  può mangiare in diagonale,\n"
+				+ "  quando viene spostato dalla\n  casella di partenza può muoversi anche di 2");
+		cavallo=new Label("- Cavallo: si muove a L");
+		alfiere=new Label("- Alfiere: si muove in diagonale");
+		torre=new Label("- Torre: si muove o in verticale o in orizzontale");
+		re=new Label("- Re: si muove di una casella in tutte le direzioni");
+		regina=new Label("- Regina: si muove in verticale, in orizzontale\n  e in diagonale");
+		turno.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
+		informazioni = new Label("Il gioco termina quando il re viene mangiato,\n"
+				+ "non esistono promozioni dei pedoni,\nmuove per primo sempre il bianco,\nsi muove una volta a testa.");
+		
+		// Aggiungi i label al pannello
+		infoBox.getChildren().addAll(titolo,informazioni,turno,mosse,pedone,cavallo,alfiere,torre,re,regina);
+		
+		// Layout principale: scacchiera a sinistra, informazioni a destra
+		HBox layoutPrincipale = new HBox();
+		layoutPrincipale.getChildren().addAll(grid, infoBox);
 
-		Scene scene = new Scene(grid, 480, 480);
+
+		Scene scene = new Scene(layoutPrincipale);
 		primaryStage.setTitle("Scacchiera");
 		primaryStage.setScene(scene);
 		primaryStage.show();
@@ -149,6 +200,7 @@ public class Prova extends Application {
 	private void mouseCliccato(StackPane cella, MouseEvent event) {
 		ImageView pezzo = null;
 		String vincitore;
+		
 		
 
 		// Cerco nella cella cliccata se c'è un pezzo (escludendo il primo ImageView che
@@ -549,11 +601,12 @@ public class Prova extends Application {
 						System.out.println("Ha vinto il bianco");
 					}
 
-					// Mostro un messaggio di fine partita usando Alert che apre un'icona che si può chiudere
+					// Mostro un messaggio di fine partita usando Alert che apre una piccol finestra 
+					// e dice chi ha vinto e che la partita è finita
 					Alert alert = new Alert(Alert.AlertType.INFORMATION);
 					alert.setTitle("Scacco Matto");
 					alert.setHeaderText(null);
-					alert.setContentText("Il Re è stato catturato! Ha vinto il " + vincitore+ "! Fine della partita.");
+					alert.setContentText("Scacco Matto! Ha vinto il " + vincitore+ "! Fine della partita.");
 					alert.showAndWait();
 
 					return; // Ferma il gioco
@@ -569,6 +622,7 @@ public class Prova extends Application {
 				System.out.println("Pezzo spostato.");
 				// Cambio turno
 				turnoBianco = !turnoBianco;
+				turno.setText("Turno: " + (turnoBianco ? "Bianco" : "Nero"));
 				System.out.println("Turno: " + (turnoBianco ? "Bianco" : "Nero"));
 			}
 
